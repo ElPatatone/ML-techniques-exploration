@@ -1,10 +1,10 @@
 library("readxl")
 library("ggplot2")
 # Reading in the vehicle.xlsx file
-data = read_excel("/home/elpatatone/Documents/rcw/data/vehicles.xlsx")
+data <- read_excel("/home/elpatatone/Documents/rcw/data/vehicles.xlsx")
 
 #removing the class and sample column as we do not need it for the k means clustering.
-data = subset(data, select = -c(Samples, Class))
+data <- subset(data, select = -c(Samples, Class))
 str(data)
 #making sure there are no null values in the data set before checking for outliers.
 sum(is.na(data))
@@ -13,13 +13,13 @@ sum(is.na(data))
 boxplot(data)
 #use the sapply function to find the z-score for all the samples to then determine the outliers.
 #I am creating a new column for the z-score for each of the samples, this makes it easier to remove the outliers.
-data$zscore = sapply(data, function(data) (data-mean(data))/sd(data))
+data$zscore <- sapply(data, function(data) (data-mean(data))/sd(data))
 #just double checking the dimensions of the original data set before removing outliers.
 dim(data)
 data$zscore
 
 #creating a new table that does not contain the outliers, anything that has a z-score lower than 3 and more than -3.
-no_outliers = data[!rowSums(data$zscore>3), ]
+no_outliers <- data[!rowSums(data$zscore>3), ]
 
 #checking the maximum and minimum z-score to make sure the previous step worked as planned.
 max(no_outliers$zscore)
@@ -32,42 +32,33 @@ boxplot(data)
 boxplot(no_outliers)
 
 #now removing the z-score column as it will change the result of the clustering
-no_outliers = subset(no_outliers, select = -c(zscore))
+no_outliers <- subset(no_outliers, select = -c(zscore))
 #scaling the data using the built-in scale function in R, I am also making a new dataframe to make comparisons easier.
-no_outliers_normalised = as.data.frame(scale(no_outliers))
+no_outliers_normalised <- as.data.frame(scale(no_outliers))
 #making sure the data was normalised properly
 no_outliers$Rad.Ra
 no_outliers_normalised$Rad.Ra
 
 #using automated tools to determine the best number of cluster centers
-#Nbclust
 library("NbClust")
 library("factoextra")
 library("cluster")
-res = NbClust(no_outliers_normalised, distance = "euclidean", method = "kmeans", index="all")
 
-#Elbow method
-# k = 1:10
-# WSS = sapply(k, function(k) {kmeans(no_outliers_normalised, centers = k)$tot.withinss})
-# WSS
-# plot(k, WSS, type="b", xlab="Number of k", ylab="Within sum of squares")
-
+#Nbclust
+NbClust(no_outliers_normalised, distance = "euclidean", method = "kmeans", index="all")
 #Elbow method
 fviz_nbclust(no_outliers_normalised, kmeans, method='wss')
-
 #Silhouette method
 fviz_nbclust(no_outliers_normalised, kmeans, method='silhouette')
-
 #Gap Stastics
 fviz_nbclust(no_outliers_normalised, kmeans, method='gap_stat')
 
 #performing kmeans clustering using the most favoured "k" from the automated methods used above.
-kmeans_data = kmeans(no_outliers_normalised, centers = 3, nstart = 10)
-
+kmeans_data <- kmeans(no_outliers_normalised, centers = 3, nstart = 10)
 fviz_cluster(kmeans_data, data = no_outliers_normalised)
 
-# data_cluster <- data.frame(no_outliers_normalised, cluster = as.factor(kmeans_data$cluster))
-# head(data_cluster)
+data_cluster <- data.frame(no_outliers_normalised, cluster = as.factor(kmeans_data$cluster))
+head(data_cluster)
 
 #showing the kmeans output
 kmeans_data
@@ -90,3 +81,31 @@ transformed_data <- as.data.frame(-pca_data$x[,1:6])
 head(transformed_data)
 #new dimension is 824 x 6, thus reducing the attributes by 3 times.
 dim(transformed_data)
+
+#applying the same 4 automated tools to find the new favoured k for the clustring
+#Nbclust
+NbClust(transformed_data, distance = "euclidean", method = "kmeans", index="all")
+#Elbow method
+fviz_nbclust(transformed_data, kmeans, method='wss')
+#Silhouette method
+fviz_nbclust(transformed_data, kmeans, method='silhouette')
+#Gap Stastics
+fviz_nbclust(transformed_data, kmeans, method='gap_stat')
+
+#performing kmeans clustering using the new dataset
+#performing kmeans clustering using the most favoured "k" from the automated methods used above.
+kmeans_pca_data <- kmeans(transformed_data, centers = 2, nstart = 10)
+fviz_cluster(kmeans_pca_data, data = transformed_data)
+
+data_cluster <- data.frame(transformed_data, cluster = as.factor(kmeans_pca_data$cluster))
+head(data_cluster)
+
+#showing the kmeans output
+kmeans_pca_data
+#showing the within cluser summs of squares(WSS) and the between cluster sums of squares (BSS)
+kmeans_pca_data$tot.withinss
+kmeans_pca_data$betweenss
+#showing the silhouette plot for the clustering
+kmeans_pca_data $cluster
+silhouette <- silhouette(kmeans_pca_data $cluster, dist(transformed_data))
+fviz_silhouette(silhouette)
