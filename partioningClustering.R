@@ -18,7 +18,7 @@ data$zscore = sapply(data, function(data) (data-mean(data))/sd(data))
 dim(data)
 data$zscore
 
-#creating a new table that does not contain the outliers.
+#creating a new table that does not contain the outliers, anything that has a z-score lower than 3 and more than -3.
 no_outliers = data[!rowSums(data$zscore>3), ]
 
 #checking the maximum and minimum z-score to make sure the previous step worked as planned.
@@ -33,8 +33,6 @@ boxplot(no_outliers)
 
 #now removing the z-score column as it will change the result of the clustering
 no_outliers = subset(no_outliers, select = -c(zscore))
-#making sure the column was removed as intended
-dim(no_outliers)
 #scaling the data using the built-in scale function in R, I am also making a new dataframe to make comparisons easier.
 no_outliers_normalised = as.data.frame(scale(no_outliers))
 #making sure the data was normalised properly
@@ -49,14 +47,17 @@ library("cluster")
 res = NbClust(no_outliers_normalised, distance = "euclidean", method = "kmeans", index="all")
 
 #Elbow method
-k = 1:10
-WSS = sapply(k, function(k) {kmeans(no_outliers_normalised, centers = k)$tot.withinss})
-WSS
-plot(k, WSS, type="b", xlab="Number of k", ylab="Within sum of squares")
+# k = 1:10
+# WSS = sapply(k, function(k) {kmeans(no_outliers_normalised, centers = k)$tot.withinss})
+# WSS
+# plot(k, WSS, type="b", xlab="Number of k", ylab="Within sum of squares")
+
 #Elbow method
 fviz_nbclust(no_outliers_normalised, kmeans, method='wss')
+
 #Silhouette method
 fviz_nbclust(no_outliers_normalised, kmeans, method='silhouette')
+
 #Gap Stastics
 fviz_nbclust(no_outliers_normalised, kmeans, method='gap_stat')
 
@@ -77,3 +78,15 @@ kmeans_data$betweenss
 kmeans_data$cluster
 silhouette <- silhouette(kmeans_data$cluster, dist(no_outliers_normalised))
 fviz_silhouette(silhouette)
+
+
+#applying PCA to the dataset to reduce dimensionality.
+#this is the scaled dataset without the outliers
+head(no_outliers_normalised)
+pca_data <- prcomp(no_outliers_normalised, center = TRUE, scale = TRUE)
+summary(pca_data)
+#making a new dataset with only the first 6 PCA as the cumulative proportion for them is > 92%
+transformed_data <- as.data.frame(-pca_data$x[,1:6])
+head(transformed_data)
+#new dimension is 824 x 6, thus reducing the attributes by 3 times.
+dim(transformed_data)
