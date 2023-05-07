@@ -1,6 +1,7 @@
 library("readxl")
 library("dplyr")
 library("neuralnet")
+library("Metrics")
 
 data <- read_excel("/home/elpatatone/Documents/rcw/data/uow_consumption.xlsx")
 
@@ -30,31 +31,25 @@ time_lagged_data <- bind_cols(
     lag(normalized_input_data, 1),    # Current period
     normalized_input_data            # Predicted value
 )
-
 #renaming dataframe with names() as it does not work with bind_cols()
-names(time_lagged_data) <- c("t-2", "t-1", "t", "t+1")
+names(time_lagged_data) <- c("previous2", "previous", "current", "predicted")
 # Print the data frame, which includes NA values due to the time lagging
 time_lagged_data
-
 # Remove rows with missing values
 time_lagged_data <- time_lagged_data[complete.cases(time_lagged_data),]
-
 # Print the first few rows of the resulting time-lagged data
 head(time_lagged_data)
-dim(time_lagged_data)
 
-#I/O matrix with t-7, t-1, t+1
+#I/O matrix with previous7, previous1, predicted
 time_lagged_data2 <- bind_cols(
     lag(normalized_input_data, 8),
     lag(normalized_input_data, 2),
     normalized_input_data
 )
-names(time_lagged_data2) <- c("t-7", "t-1", "t+1")
-
+names(time_lagged_data2) <- c("previous7", "previous1", "predicted")
 time_lagged_data2 <- time_lagged_data2[complete.cases(time_lagged_data2),]
-head(time_lagged_data2)
 
-#I/O matrix with t-7, t-4, t-3, t-2, t-1, t, t+1
+#I/O matrix with previous7, previous4, previous3, previous2, previous1, current, predicted
 time_lagged_data3 <- bind_cols(
     lag(normalized_input_data, 8),
     lag(normalized_input_data, 5),
@@ -64,30 +59,26 @@ time_lagged_data3 <- bind_cols(
     lag(normalized_input_data, 1),
     normalized_input_data
 )
-names(time_lagged_data3) <- c("t-7", "t-4", "t-3", "t-2", "t-1", "t", "t+1")
-
+names(time_lagged_data3) <- c("previous7", "previous4", "previous3", "previous2", "previous1", "current", "predicted")
 time_lagged_data3 <- time_lagged_data2[complete.cases(time_lagged_data3),]
-head(time_lagged_data3)
 
 #Beginning MLP-NN training using the I/O as the dataset.
+
 #NN-1 with the first I/O matrix
 train_data1 <- time_lagged_data[1:380,]
 test_data1 <- time_lagged_data[381:467,]
-test_data1
 train_data1
-# t-2, t-1, t, t+1,
-formula <- formula(`t+1` ~ `t-2` + `t-1` + `t`)
-nn1 <- neuralnet(formula, data=train_data1, hidden=5, linear.output=TRUE)
-print(names(train_data1))
+test_data1
+# previous2, previous1, t, predicted
+nn1 <- neuralnet(predicted ~ previous2 + previous + current, data=train_data1, hidden=5, linear.output=TRUE)
+plot(nn1)
+predicted <- predict(nn1, newdata = test_data1)
+actual <- test_data1$predicted
+rmse <- rmse(predicted, actual)
 
+#NN-2 with the first I/O matrix
 train_data2 <- time_lagged_data2[1:380,]
-test_data2 <- time_lagged_data2[381:462,]
-test_data2
-train_data2
-na.omit(train_data2)
-
-print(names(train_data2))
-
-formula2 <- formula(`t+1` ~ `t-7` + `t-1`)
-nn2 <- neuralnet(`t+1` ~ `t-7` + `t-1`, data = train_data1, hidden=5, linear.output=TRUE)
-print(names(train_data2))
+test_data2 <- time_lagged_data2[381:467,]
+# previous2, previous1, t, predicted
+nn1 <- neuralnet(predicted ~ previous2 + previous + current, data=train_data1, hidden=5, linear.output=TRUE)
+plot(nn1)
