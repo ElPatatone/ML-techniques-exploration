@@ -41,16 +41,16 @@ time_lagged_data <- time_lagged_data[complete.cases(time_lagged_data),]
 head(time_lagged_data)
 
 #I/O matrix with previous7, previous1, predicted
-time_lagged_data2 <- bind_cols(
+time_lagged_data_2 <- bind_cols(
     lag(normalized_input_data, 8),
     lag(normalized_input_data, 2),
     normalized_input_data
 )
-names(time_lagged_data2) <- c("previous7", "previous1", "predicted")
-time_lagged_data2 <- time_lagged_data2[complete.cases(time_lagged_data2),]
+names(time_lagged_data_2) <- c("previous7", "previous1", "predicted")
+time_lagged_data_2 <- time_lagged_data_2[complete.cases(time_lagged_data_2),]
 
 #I/O matrix with previous7, previous4, previous3, previous2, previous1, current, predicted
-time_lagged_data3 <- bind_cols(
+time_lagged_data_3 <- bind_cols(
     lag(normalized_input_data, 8),
     lag(normalized_input_data, 5),
     lag(normalized_input_data, 4),
@@ -59,26 +59,128 @@ time_lagged_data3 <- bind_cols(
     lag(normalized_input_data, 1),
     normalized_input_data
 )
-names(time_lagged_data3) <- c("previous7", "previous4", "previous3", "previous2", "previous1", "current", "predicted")
-time_lagged_data3 <- time_lagged_data2[complete.cases(time_lagged_data3),]
+names(time_lagged_data_3) <- c("previous7", "previous4", "previous3", "previous2", "previous1", "current", "predicted")
+time_lagged_data_3 <- time_lagged_data_3[complete.cases(time_lagged_data_3),]
+
+#I/O matrix with previous7, previous3, current, predicted
+time_lagged_data_4 <- bind_cols(
+    lag(normalized_input_data, 8),
+    lag(normalized_input_data, 4),
+    lag(normalized_input_data, 1),
+    normalized_input_data
+)
+names(time_lagged_data_4) <- c("previous7", "previous3", "current", "predicted")
+time_lagged_data_4 <- time_lagged_data_4[complete.cases(time_lagged_data_4),]
+time_lagged_data_4
 
 #Beginning MLP-NN training using the I/O as the dataset.
 
 #NN-1 with the first I/O matrix
+#creating the training and testing batches
 train_data1 <- time_lagged_data[1:380,]
 test_data1 <- time_lagged_data[381:467,]
-train_data1
-test_data1
-# previous2, previous1, t, predicted
-nn1 <- neuralnet(predicted ~ previous2 + previous + current, data=train_data1, hidden=5, linear.output=TRUE)
+
+nn1 <- neuralnet(predicted ~ previous2 + previous + current,
+                data=train_data1,
+                hidden=5,
+                linear.output=TRUE)
 plot(nn1)
 predicted <- predict(nn1, newdata = test_data1)
 actual <- test_data1$predicted
-rmse <- rmse(predicted, actual)
+
+#using the RMSE, MAE, MAPE and SMAPE to evaluate the models
+rmse(actual, predicted)
+mae(actual, predicted)
+mape(actual, predicted)
+smape(actual, predicted)
 
 #NN-2 with the first I/O matrix
-train_data2 <- time_lagged_data2[1:380,]
-test_data2 <- time_lagged_data2[381:467,]
-# previous2, previous1, t, predicted
-nn1 <- neuralnet(predicted ~ previous2 + previous + current, data=train_data1, hidden=5, linear.output=TRUE)
-plot(nn1)
+train_data_2 <- time_lagged_data_2[1:380,]
+test_data_2 <- time_lagged_data_2[381:462,]
+
+nn2 <- neuralnet(predicted ~ previous7 + previous1,
+                data=train_data_2,
+                hidden=10,
+                linear.output=TRUE)
+# plot(nn3)
+predicted <- predict(nn2, newdata = test_data_2)
+actual <- test_data_2$predicted
+#using the RMSE, MAE, MAPE and SMAPE to evaluate the models
+rmse(actual, predicted)
+mae(actual, predicted)
+mape(actual, predicted)
+smape(actual, predicted)
+
+#NN-3 with the first I/O matrix
+train_data_3 <- time_lagged_data_3[1:380,]
+test_data_3 <- time_lagged_data_3[381:462,]
+
+nn3 <- neuralnet(predicted ~ previous7 + previous4 + previous3 + previous2 + previous1 + current, 
+                data=train_data_3,
+                hidden=10,
+                act.fct = "tanh",
+                linear.output=FALSE)
+# plot(nn3)
+predicted <- predict(nn3, newdata = test_data_3)
+actual <- test_data_3$predicted
+#using the RMSE, MAE, MAPE and SMAPE to evaluate the models
+rmse(actual, predicted)
+mae(actual, predicted)
+mape(actual, predicted)
+smape(actual, predicted)
+
+#NN-4 with the first I/O matrix
+train_data_4 <- time_lagged_data_3[1:380,]
+test_data_4 <- time_lagged_data_3[381:462,]
+
+nn4 <- neuralnet(predicted ~ previous7 + previous4 + previous3 + previous2 + previous1 + current, 
+                data=train_data_4,
+                hidden=c(8,5),
+                linear.output=TRUE)
+plot(nn4)
+predicted <- predict(nn4, newdata = test_data_4)
+actual <- test_data_4$predicted
+#using the RMSE, MAE, MAPE and SMAPE to evaluate the models
+rmse(actual, predicted)
+mae(actual, predicted)
+mape(actual, predicted)
+smape(actual, predicted)
+
+#NN-5 with the first I/O matrix
+train_data_5 <- time_lagged_data_3[1:380,]
+test_data_5 <- time_lagged_data_3[381:462,]
+
+nn5 <- neuralnet(predicted ~ previous7 + previous1,
+                data=train_data_5,
+                hidden=c(8,5),
+                linear.output=FALSE)
+plot(nn5)
+predicted <- predict(nn5, newdata = test_data_5)
+actual <- test_data_5$predicted
+#using the RMSE, MAE, MAPE and SMAPE to evaluate the models
+rmse(actual, predicted)
+mae(actual, predicted)
+mape(actual, predicted)
+smape(actual, predicted)
+
+#NN-6 with the first I/O matrix
+train_data_6 <- time_lagged_data_4[1:380,]
+test_data_6 <- time_lagged_data_4[381:462,]
+
+nn6 <- neuralnet(predicted ~ previous7 + previous3 + current,
+                data=train_data_6,
+                hidden=c(8,5),
+                linear.output=FALSE)
+plot(nn6)
+predicted <- predict(nn6, newdata = test_data_6)
+actual <- test_data_6$predicted
+#using the RMSE, MAE, MAPE and SMAPE to evaluate the models
+rmse(actual, predicted)
+mae(actual, predicted)
+mape(actual, predicted)
+smape(actual, predicted)
+
+
+
+
+
