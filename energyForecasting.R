@@ -25,52 +25,65 @@ normalized_input_data <- as.data.frame(lapply(input_data, normalize))
 normalized_input_data
 
 #function to create the time delayed input variables I/O matrices
-create_time_lagged_data <- function(data, lag_indices) {
+create_time_lagged_data <- function(data, lag_values) {
 
     #this lets me specify the time lag and it will bind the time delayed column to the orginal dataset which acts as the column for the predicted column, as it has no lag
-    time_lagged_data <- cbind(lapply(lag_indices, function(lag_index) lag(data, lag_index)), data)
+    time_lagged_data <- cbind(lapply(lag_values, function(x) lag(data, x)), data)
+    names(time_lagged_data) <- paste(c("previous2", "previous", "current", "predicted"))
     # Remove rows with missing values
     time_lagged_data <- time_lagged_data[complete.cases(time_lagged_data),]
     return(time_lagged_data)
 }
 
 # Create different versions of the time-lagged data
-time_lagged_data1 <- create_time_lagged_data(normalized_input_data, c(3,2,1))
-time_lagged_data2 <- create_time_lagged_data(normalized_input_data, c(7, 2))
-time_lagged_data3 <- create_time_lagged_data(normalized_input_data, c(7, 4:1))
-time_lagged_data4 <- create_time_lagged_data(normalized_input_data, c(1, 3, 7))
+time_lagged_data_1 <- create_time_lagged_data(normalized_input_data, c(3,2,1))
+#renaming the columns to make it the data easier to work with
+# names(time_lagged_data_1) <- c("previous2", "previous", "current", "predicted")
+names(time_lagged_data_1)
+time_lagged_data_2 <- create_time_lagged_data(normalized_input_data, c(7, 2))
+time_lagged_data_3 <- create_time_lagged_data(normalized_input_data, c(7, 4:1))
+time_lagged_data_4 <- create_time_lagged_data(normalized_input_data, c(1, 3, 7))
 
-head(time_lagged_data1)
-head(time_lagged_data)
+# Define a function to make training the nn models easier
+train_neuralnet <- function(data, layers) {
 
-# Define a function to train the neural network model
-train_neuralnet <- function(train_data, test_data, layers, activation_function) {
+    #creating the training and testing batches for the nn, keeping the training sample to 380.
+    train_data <- data[1:380,]
+    test_data <- data[381:nrow(data),]
 
-    nn <- neuralnet(predicted ~ ., data = train_data, hidden = layers, linear.output = activation_function)
+    nn <- neuralnet(predicted ~ ., data = train_data, hidden = layers)
     predicted <- predict(nn, newdata = test_data)
     actual <- test_data$predicted
-    #using the RMSE, MAE, MAPE and SMAPE to evaluate the models
+    #using the RMSE, MAE, MAPE and SMAPE to evaluate the models, will be outputted nicely for easy comparisons
     metrics <- c("RMSE" = rmse(actual, predicted),
                "MAE" = mae(actual, predicted),
                "MAPE" = mape(actual, predicted),
                "SMAPE" = smape(actual, predicted))
+    #plotting for visual representation
+    plot(nn)
     return(metrics)
 }
+
+nn_1 <- train_neuralnet(time_lagged_data_1, 8)
+nn_1
+
+
+
 
 #Beginning MLP-NN training using the I/O as the dataset.
 
 #NN-1 with the first I/O matrix
 #creating the training and testing batches
-train_data1 <- time_lagged_data[1:380,]
-test_data1 <- time_lagged_data[381:467,]
+train_data_1 <- time_lagged_data[1:380,]
+test_data_1 <- time_lagged_data[381:467,]
 
 nn1 <- neuralnet(predicted ~ previous2 + previous + current,
-                data=train_data1,
+                data=train_data_1,
                 hidden=5,
                 linear.output=TRUE)
 plot(nn1)
-predicted <- predict(nn1, newdata = test_data1)
-actual <- test_data1$predicted
+predicted <- predict(nn1, newdata = test_data_1)
+actual <- test_data_1$predicted
 
 #using the RMSE, MAE, MAPE and SMAPE to evaluate the models
 rmse(actual, predicted)
