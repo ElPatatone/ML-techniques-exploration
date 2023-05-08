@@ -3,7 +3,7 @@ library("dplyr")
 library("neuralnet")
 library("Metrics")
 
-data <- read_excel("/home/elpatatone/Documents/rcw/data/uow_consumption.xlsx")
+data <- read_excel("~/Documents/rcw/data/uow_consumption.xlsx")
 
 #renaming the columns as they have weird names by default
 names(data)[2] <- '18:00'
@@ -25,28 +25,22 @@ normalized_input_data <- as.data.frame(lapply(input_data, normalize))
 normalized_input_data
 
 #function to create the time delayed input variables I/O matrices
-create_time_lagged_data <- function(data, lag_values) {
+create_time_lagged_data <- function(data, lag_values, name) {
 
     #this lets me specify the time lag and it will bind the time delayed column to the orginal dataset which acts as the column for the predicted column, as it has no lag
     time_lagged_data <- cbind(lapply(lag_values, function(x) lag(data, x)), data)
     # Remove rows with missing values
     time_lagged_data <- time_lagged_data[complete.cases(time_lagged_data),]
+    #Raname the data with the relevant names
+    names(time_lagged_data) <- name
     return(time_lagged_data)
 }
 
 # Create different versions of the time-lagged data
-time_lagged_data_1 <- create_time_lagged_data(normalized_input_data, c(3,2,1))
-#renaming the columns to make it the data easier to work with
-names(time_lagged_data_1) <- c("previous2", "previous", "current", "predicted")
-
-time_lagged_data_2 <- create_time_lagged_data(normalized_input_data, c(8, 2))
-names(time_lagged_data_2) <- c("previous7", "previous1", "predicted")
-
-time_lagged_data_3 <- create_time_lagged_data(normalized_input_data, c(8, 5:1))
-names(time_lagged_data_3) <- c("previous7", "previous4", "previous3", "previous2", "previous1", "current", "predicted")
-
-time_lagged_data_4 <- create_time_lagged_data(normalized_input_data, c(8, 3, 1))
-names(time_lagged_data_4) <- c("previous7", "previous2", "current", "predicted")
+time_lagged_data_1 <- create_time_lagged_data(normalized_input_data, c(3,2,1), c("previous2", "previous", "current", "predicted"))
+time_lagged_data_2 <- create_time_lagged_data(normalized_input_data, c(8, 2), c("previous7", "previous1", "predicted"))
+time_lagged_data_3 <- create_time_lagged_data(normalized_input_data, c(8, 5:1), c("previous7", "previous4", "previous3", "previous2", "previous1", "current", "predicted"))
+time_lagged_data_4 <- create_time_lagged_data(normalized_input_data, c(8, 3, 1), c("previous7", "previous2", "current", "predicted"))
 
 # Define a function to make training the nn models easier
 train_neuralnet <- function(data, layers) {
@@ -55,6 +49,7 @@ train_neuralnet <- function(data, layers) {
     train_data <- data[1:380,]
     test_data <- data[381:nrow(data),]
 
+    #making the nn using the neuralnet function.
     nn <- neuralnet(predicted ~ ., data = train_data, hidden = layers)
     predicted <- predict(nn, newdata = test_data)
     actual <- test_data$predicted
@@ -64,13 +59,20 @@ train_neuralnet <- function(data, layers) {
                "MAPE" = mape(actual, predicted),
                "SMAPE" = smape(actual, predicted))
     #plotting for visual representation
-    plot(nn)
+    # plot(nn)
     return(metrics)
 }
 
 #creating the NN with the different I/O matrix as input and different model parameters
 nn_1 <- train_neuralnet(time_lagged_data_1, 8)
-nn_1
-
 nn_2 <- train_neuralnet(time_lagged_data_2, c(6,4))
-nn_2
+nn_3 <- train_neuralnet(time_lagged_data_4, c(8,4))
+nn_1["RMSE"]
+
+#creating a new dataframe that will hold the output values for each of the metrics
+nn_output <- data.frame(
+    NN_Model = c("nn_1", "nn_2", "nn_3"),
+    RMSE = c(nn_1["RMSE"], nn_2["RMSE"], nn_3["RMSE"])
+)
+names(nn_output)
+nn_output
