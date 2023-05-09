@@ -1,0 +1,8 @@
+\contentsline {section}{\numberline {1}Partitioning Clustering}{2}{}%
+\contentsline {subsection}{\numberline {1.1}Pre-Processing the data}{2}{}%
+\contentsline {subsection}{\numberline {1.2}Finding the best k using: Nblust, Elbow method, Gap statistics and sillhoutte methods}{2}{}%
+\contentsline {subsubsection}{\numberline {1.2.1}Nblust}{2}{}%
+\contentsline {subsubsection}{\numberline {1.2.2}Elbow Method}{3}{}%
+\contentsline {subsubsection}{\numberline {1.2.3}Gap Statistics}{3}{}%
+\contentsline {subsubsection}{\numberline {1.2.4}Sillhoutte Method}{4}{}%
+\contentsline {subsection}{\numberline {1.3}K-means Clustering investigation}{5}{}%

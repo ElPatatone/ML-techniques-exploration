@@ -1,8 +1,8 @@
 library("readxl")
 library("ggplot2")
+library("dplyr")
 # Reading in the vehicle.xlsx file
-data <- read_excel("/home/elpatatone/Documents/rcw/data/vehicles.xlsx")
-
+data <- read_excel("~/Documents/rcw/data/vehicles.xlsx")
 #removing the class and sample column as we do not need it for the k means clustering.
 data <- subset(data, select = -c(Samples, Class))
 str(data)
@@ -16,10 +16,10 @@ boxplot(data)
 data$zscore <- sapply(data, function(data) (data-mean(data))/sd(data))
 #just double checking the dimensions of the original data set before removing outliers.
 dim(data)
-data$zscore
+head(data$zscore)
 
 #creating a new table that does not contain the outliers, anything that has a z-score lower than 3 and more than -3.
-no_outliers <- data[!rowSums(data$zscore>3), ]
+no_outliers <- data[!rowSums(abs(data$zscore) > 3), ]
 
 #checking the maximum and minimum z-score to make sure the previous step worked as planned.
 max(no_outliers$zscore)
@@ -63,13 +63,13 @@ head(data_cluster)
 #showing the kmeans output
 kmeans_data
 #showing the within cluser summs of squares(WSS) and the between cluster sums of squares (BSS)
+kmeans_data$centers
 kmeans_data$tot.withinss
 kmeans_data$betweenss
 #showing the silhouette plot for the clustering
 kmeans_data$cluster
 silhouette <- silhouette(kmeans_data$cluster, dist(no_outliers_normalised))
 fviz_silhouette(silhouette)
-
 
 #applying PCA to the dataset to reduce dimensionality.
 #this is the scaled dataset without the outliers
@@ -94,7 +94,7 @@ fviz_nbclust(transformed_data, kmeans, method='gap_stat')
 
 #performing kmeans clustering using the new dataset
 #performing kmeans clustering using the most favoured "k" from the automated methods used above.
-kmeans_pca_data <- kmeans(transformed_data, centers = 2, nstart = 10)
+kmeans_pca_data <- kmeans(transformed_data, centers = 3, nstart = 10)
 fviz_cluster(kmeans_pca_data, data = transformed_data)
 
 data_cluster <- data.frame(transformed_data, cluster = as.factor(kmeans_pca_data$cluster))

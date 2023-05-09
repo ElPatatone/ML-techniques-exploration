@@ -152,3 +152,15 @@ mae(actual, predicted)
 mape(actual, predicted)
 smape(actual, predicted)
 
+#creating the NN with the different I/O matrix as input and different model parameters
+# nn_1 <- train_neuralnet(time_lagged_data_1, 8)
+# nn_2 <- train_neuralnet(time_lagged_data_2, c(6,4))
+# nn_3 <- train_neuralnet(time_lagged_data_4, c(8,4))
+# nn_1["RMSE"]
+
+#creating a new dataframe that will hold the output values for each of the metrics
+# nn_output <- data.frame(
+#     NN_Model = c("nn_1", "nn_2", "nn_3"),
+#     RMSE = c(nn_1["RMSE"], nn_2["RMSE"], nn_3["RMSE"])
+# )
+# names(nn_output)
