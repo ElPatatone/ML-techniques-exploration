@@ -75,11 +75,17 @@ fviz_silhouette(silhouette)
 #this is the scaled dataset without the outliers
 head(no_outliers_normalised)
 pca_data <- prcomp(no_outliers_normalised, center = TRUE, scale = TRUE)
+eigenvalues <- pca_data$sdev^2
+eigenvectors <- pca_data$rotation
+eigenvalues
+eigenvectors
 summary(pca_data)
+
 #making a new dataset with only the first 6 PCA as the cumulative proportion for them is > 92%
 transformed_data <- as.data.frame(-pca_data$x[,1:6])
 head(transformed_data)
 #new dimension is 824 x 6, thus reducing the attributes by 3 times.
+dim(pca_data$x)
 dim(transformed_data)
 
 #applying the same 4 automated tools to find the new favoured k for the clustring
@@ -103,9 +109,10 @@ head(data_cluster)
 #showing the kmeans output
 kmeans_pca_data
 #showing the within cluser summs of squares(WSS) and the between cluster sums of squares (BSS)
+kmeans_pca_data$centers
 kmeans_pca_data$tot.withinss
 kmeans_pca_data$betweenss
 #showing the silhouette plot for the clustering
-kmeans_pca_data $cluster
+kmeans_pca_data$cluster
 silhouette <- silhouette(kmeans_pca_data $cluster, dist(transformed_data))
 fviz_silhouette(silhouette)

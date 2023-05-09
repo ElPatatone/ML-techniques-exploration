@@ -2,7 +2,21 @@
 \contentsline {subsection}{\numberline {1.1}Pre-Processing the data}{2}{}%
 \contentsline {subsection}{\numberline {1.2}Finding the best k using: Nblust, Elbow method, Gap statistics and sillhoutte methods}{2}{}%
 \contentsline {subsubsection}{\numberline {1.2.1}Nblust}{2}{}%
-\contentsline {subsubsection}{\numberline {1.2.2}Elbow Method}{3}{}%
+\contentsline {subsubsection}{\numberline {1.2.2}Elbow Method}{2}{}%
 \contentsline {subsubsection}{\numberline {1.2.3}Gap Statistics}{3}{}%
 \contentsline {subsubsection}{\numberline {1.2.4}Sillhoutte Method}{4}{}%
 \contentsline {subsection}{\numberline {1.3}K-means Clustering investigation}{5}{}%
+\contentsline {subsubsection}{\numberline {1.3.1}Discussing the K-means outputs}{5}{}%
+\contentsline {subsubsection}{\numberline {1.3.2}Sillhoutte Plot}{7}{}%
+\contentsline {subsection}{\numberline {1.4}K-means Clustering with PCA}{7}{}%
+\contentsline {subsubsection}{\numberline {1.4.1}Creating the new dataset with PCA}{7}{}%
+\contentsline {subsection}{\numberline {1.5}Finding the best k for PCA dataset using: Nblust, Elbow method, Gap statistics and sillhoutte methods}{9}{}%
+\contentsline {subsubsection}{\numberline {1.5.1}Nblust}{9}{}%
+\contentsline {subsubsection}{\numberline {1.5.2}Elbow Method}{9}{}%
+\contentsline {subsubsection}{\numberline {1.5.3}Gap Statistics}{10}{}%
+\contentsline {subsubsection}{\numberline {1.5.4}Sillhoutte Method}{10}{}%
+\contentsline {subsection}{\numberline {1.6}K-means Clustering Investigation with PCA}{11}{}%
+\contentsline {subsubsection}{\numberline {1.6.1}Discussing the K-means outputs}{11}{}%
+\contentsline {subsubsection}{\numberline {1.6.2}Sillhoutte Plot}{13}{}%
+\contentsline {section}{\numberline {2}Energy Forecasting}{13}{}%
+\contentsline {section}{\numberline {A}code}{13}{}%
