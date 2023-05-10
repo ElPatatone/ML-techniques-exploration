@@ -18,5 +18,13 @@
 \contentsline {subsection}{\numberline {1.6}K-means Clustering Investigation with PCA}{11}{}%
 \contentsline {subsubsection}{\numberline {1.6.1}Discussing the K-means outputs}{11}{}%
 \contentsline {subsubsection}{\numberline {1.6.2}Sillhoutte Plot}{13}{}%
+\contentsline {subsubsection}{\numberline {1.6.3}Calinski Harabasz index}{13}{}%
 \contentsline {section}{\numberline {2}Energy Forecasting}{13}{}%
-\contentsline {section}{\numberline {A}code}{13}{}%
+\contentsline {subsection}{\numberline {2.1}Type of input variables used for electricity load forecasting}{13}{}%
+\contentsline {subsection}{\numberline {2.2}Normalising the data}{13}{}%
+\contentsline {subsection}{\numberline {2.3}Evaluating the models using: RMSE, MAE, MAPE. sMAPE}{13}{}%
+\contentsline {subsection}{\numberline {2.4}Evaluating the results}{14}{}%
+\contentsline {subsection}{\numberline {2.5}NN training with the NARX approach}{16}{}%
+\contentsline {subsubsection}{\numberline {2.5.1}Evaluating the results in the NARX approach}{16}{}%
+\contentsline {section}{\numberline {A}Code for Partitioning clustering}{16}{}%
+\contentsline {section}{\numberline {B}Code for Energy forecasting}{18}{}%

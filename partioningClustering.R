@@ -12,13 +12,15 @@ sum(is.na(data))
 #using the boxplot to visually show the outliers
 boxplot(data)
 #use the sapply function to find the z-score for all the samples to then determine the outliers.
-#I am creating a new column for the z-score for each of the samples, this makes it easier to remove the outliers.
+#I am creating a new column for the z-score for each of the samples, 
+#this makes it easier to remove the outliers.
 data$zscore <- sapply(data, function(data) (data-mean(data))/sd(data))
 #just double checking the dimensions of the original data set before removing outliers.
 dim(data)
 head(data$zscore)
 
-#creating a new table that does not contain the outliers, anything that has a z-score lower than 3 and more than -3.
+#creating a new table that does not contain the outliers, 
+#anything that has a z-score lower than 3 and more than -3.
 no_outliers <- data[!rowSums(abs(data$zscore) > 3), ]
 
 #checking the maximum and minimum z-score to make sure the previous step worked as planned.
@@ -33,7 +35,8 @@ boxplot(no_outliers)
 
 #now removing the z-score column as it will change the result of the clustering
 no_outliers <- subset(no_outliers, select = -c(zscore))
-#scaling the data using the built-in scale function in R, I am also making a new dataframe to make comparisons easier.
+#scaling the data using the built-in scale function in R,
+#I am also making a new dataframe to make comparisons easier.
 no_outliers_normalised <- as.data.frame(scale(no_outliers))
 #making sure the data was normalised properly
 no_outliers$Rad.Ra
@@ -43,6 +46,7 @@ no_outliers_normalised$Rad.Ra
 library("NbClust")
 library("factoextra")
 library("cluster")
+library("fpc")
 
 #Nbclust
 NbClust(no_outliers_normalised, distance = "euclidean", method = "kmeans", index="all")
@@ -116,3 +120,6 @@ kmeans_pca_data$betweenss
 kmeans_pca_data$cluster
 silhouette <- silhouette(kmeans_pca_data $cluster, dist(transformed_data))
 fviz_silhouette(silhouette)
+
+#using the calinski-harabasz index
+calinhara(transformed_data, kmeans_pca_data$cluster)

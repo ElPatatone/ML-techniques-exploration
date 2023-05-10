@@ -3,7 +3,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{graphicx}
-\usepackage[top=2cm,bottom=2cm,left=3cm, right=3cm]{geometry}
+\usepackage[top=2cm,bottom=2cm,left=2cm, right=2cm]{geometry}
 \usepackage{float}
 
 \lstset{
@@ -160,7 +160,7 @@ to achieve a better \textbf{average width score}
 \subsubsection{Creating the new dataset with PCA}
 Below I have khown the \textbf{eigenvalues}, the \textbf{eigenvectors}, and the \textbf{cumulative score} per principle component. 
 To make the new transformed dataset we want to use the PCs with at least a \textbf{cumulative score} of \textbf{\textgreater 92\%}
-I decided to use the first \textbf{6 PCs} as they gave a total score of \textbf{0.94}
+I decided to use the first \textbf{6 PCs} as they gave a total score of \textbf{0.94\%}
 \begin{lstlisting}
 > eigenvalues
  [1] 9.8655415144 3.3026315672 1.2050866140 1.1255984677 0.8773731809 0.6636174794
@@ -399,14 +399,180 @@ as in the original attempt the score was \textbf{0.29}. Again, this is not the b
   \caption{Sillhoutte plot}
 \end{figure}
 
+\subsubsection{Calinski Harabasz index}
+This is a measure of the optimal number of clusters, the value can range between 0 and infinity where higher
+values means a better clustering. For the k-means model with a k of 3 the score received is 575.2178.
 
 \section{Energy Forecasting}
+\subsection{Type of input variables used for electricity load forecasting}
 
+\subsection{Normalising the data}
+Before beginning the training of the neural networks I normalised the I/O matrices. This is an essential step because it helps to improve the 
+performance and training speed of the model. It also improves the stability of the model as outliers will not have as heavy of an influence in the models 
+output, it also increases the rate of convergence as the model will be working with values in a smaller range allowing it to find the optimal weights faster.
+
+\subsection{Evaluating the models using: RMSE, MAE, MAPE. sMAPE}
+\textbf{RMSE(Root Mean Square Error)} is calculated using the following formula:
+
+$$RMSE = \sqrt{\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{n}}$
+
+The formula uses the square root of the mean of the squared differeneces between the predicted and the actual values to tell us how far the predictions are on average from the actual values where a smaller \textbf{RMSE} means the model is predicting well and a bigger \textbf{RMSE} means the model
+is not predicting the data well.
+The downside here is that it is more sensitive to outliers as they can influence sum of squared errors.
+Another issue is that it can be affected by differences in scale between variables, if one has values in a much larger range than another it will be emphasised more. 
+\\
+
+\textbf{MAE(Mean Absolute Error)} is calculated using the following formula:
+
+$$MAE = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|$
+
+This uses the average of the absolute difference between each predicted and actual value to tell us how far the predictions are on average from the actual values where a smaller \textbf{MAE} means the model is predicting well and a bigger \textbf{MAE} means the model
+is not predicting the data well.
+The downside here is that as it takes in the absolute error it will treat all errors equally so whether they are positive or negative it will not matter.
+Unlike \textbf{RMSE}, \textbf{MAE} is not as sensitive to outliers so it will not reflect the effect outliers have in the model prediction, which makes it a less accurate evaluation tool if the data still has outliers.
+\\
+
+\textbf{MAPE(Mean Absolute Percentage Error)} is calculated using the following formula:
+
+$$MAPE = \frac{1}{n} \sum_{i=1}^{n} \left|\frac{y_i - \hat{y}_i}{y_i}\right| \times 100\%$
+
+This uses the absolute difference between predicted and actual value, it then divides the difference by the actual value and the result is expressed as a percentage in the end.
+This tells us how far the predictions are on average from the actual values where a smaller \textbf{MAPE} means the model is predicting well and a bigger \textbf{MAPE} means the model
+is not predicting the data well.
+This is useful when the scale of the data varies a lot, it is also commonly used as it provides the result in percentages which is easier to understand.
+The problem with this metric is that it can put more emphasis on large errors and less emphasis on smaller errors, it is also does not work as well when the actual value is equal to or close to \textbf{0}. In such cases it can be expected
+to receive a very large \textbf{MAPE} result or even for it to be undefined. 
+\\
+
+\textbf{sMAPE(Symmetric Mean Absolute Percentage Error)} is calculated using the following formula:
+
+$$SMAPE = \frac{1}{n} \sum_{i=1}^{n} \frac{|y_i - \hat{y}_i|}{(|y_i| + |\hat{y}_i|)/2} \times 100\%#$
+
+This measures the average of the absolute percentage difference between predicted and actual value, it then divides the difference by the sum of the absolute predicted and actual values. 
+In situations where the actual values are equal to or close to \textbf{0}, \textbf{sMAPE} is preferred as it handles them better compared to \textbf{MAPE}.
+
+\subsection{Evaluating the results}
+When it came to the actual training of the neural network models I focused on a few parameters to change the output of the models, these being: the input I/O matrices, 
+the layers and number of nodes per layer and whether the output is linear or not. I did not change the activation function as the difference in ouput was negligeble in my attempts at training 
+the models, so I chose to not include it as a parameter and just used the default one that comes with the \textbf{neuralnet()} function, the logistic activation function.
+
+I made \textbf{5} different input delayed I/O matrices and made sure to train at least 2 models with each matrix, the first with 1 hidden layer while the second with 2 hidden layers.
+\begin{table}[H]
+\centering
+\caption{Comparison table}
+\label{tab:comparison}
+\begin{tabular}{|c|c|c|c|c|p{6cm}|}
+\hline
+\textbf{Model} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE} & \textbf{sMAPE} & \textbf{Description} \\
+\hline
+NN_1 & 0.1152572 & 0.0921373 & 0.1859476 & 0.1818735 & I/O matrix: t-2, t-1, t, t+1 \\
+     & & & & & layers: 1x8 \\
+                                            & & & & & linear output: TRUE\\
+\hline
+NN_2 & 0.11671855 & 0.09510258 & 0.18712046 & 0.18152017 & I/O matrix: t-7, t-1, t+1\\
+                                            & & & & & layers: 2x6-4\\
+                                            & & & & & linear output: FALSE\\
+\hline
+NN_3 & 0.11274105 & 0.08804056 & 0.16946062 & 0.17188169 & I/O matrix: t-7, t-2, t-1, t+1\\
+                                            & & & & & layers: 1x5 \\
+                                            & & & & & linear output: TRUE\\
+\hline
+NN_4 & 0.1368248 & 0.1034995 & 0.2027808 & 0.2093880 & I/O matrix: t-7, t-4, t-3, t-2, t-1, t, t+1 \\
+                                            & & & & & layers: 2x12-6\\
+                                            & & & & & linear output: FALSE\\
+\hline
+NN_5 & 0.11566742 & 0.09362933 & 0.19071920 & 0.18508842 & I/O matrix: t-1, t, t+1\\
+                                            & & & & & layers: 1x4 \\
+                                            & & & & & linear output: TRUE\\
+\hline 
+NN_6 & 0.11586446 & 0.08959127 & 0.17309226 & 0.17616521 & I/O matrix: t-7, t-2, t-1, t+1\\
+                                            & & & & & layers: 1x6\\
+                                            & & & & & linear output: TRUE\\
+\hline 
+NN_7 & 0.11679370 & 0.09541529 & 0.18768615 & 0.18188354 & I/O matrix: t-7, t-1, t+1\\
+                                            & & & & & layers: 1x4\\
+                                            & & & & & linear output: FALSE\\
+\hline 
+NN_8 & 0.1111209  & 0.0878771  & 0.1782428 & 0.1735545 & I/O matrix: t-2, t-1, t, t+1\\
+                                            & & & & & layers: 2x7-3\\
+                                            & & & & & linear output: FALSE\\
+\hline 
+NN_9 & 0.11686106 & 0.09053119 & 0.17770444 & 0.17620528 & I/O matrix: t-7, t-4, t-3, t-2, t-1, t, t+1\\
+                                            & & & & & layers: 1x10\\
+                                            & & & & & linear output: TRUE\\
+\hline 
+NN_10 & 0.11076446 & 0.09087368 & 0.18499380 & 0.17967582 & I/O matrix: t-1, t, t+1\\
+                                            & & & & & layers: 2x4-2\\
+                                            & & & & & linear output: FALSE\\
+\hline 
+NN_11 & 0.10991593 & 0.08468949 & 0.16530730 & 0.16681759 & I/O matrix: t-7, t-2, t-1, t+1\\
+                                            & & & & & layers: 2x5-3\\
+                                            & & & & & linear output: FALSE\\
+\hline 
+NN_12 & 0.1324693 & 0.1046402 & 0.1981125 & 0.2063737 & I/O matrix: t-7, t-4, t-3, t-2, t-1, t, t+1\\ 
+                                            & & & & & layers: 2x6-2\\
+                                            & & & & & linear output: TRUE\\
+\hline
+\end{tabular}
+\end{table}
+
+From the table above you can see that the results for the different models are not too different from each other. 
+After looking at the results I found that the best \textbf{1-layer NN} is \textbf{NN$_3_$} while the best \textbf{2-layer NN} is \textbf{NN$_11_$}.
+I am basing this decision on the scores achieved for the evaluation metrics, I tried to find the total number of weights but it did not calculate properly as it showed 2 and 3 for all models.
+Another observation made from the table above is that both \textbf{NN$_3_$} and \textbf{NN$_11_$} have the period \textbf{t-7} in their input matrix. As suggested by the specification it appears that the \textbf{t-7} period does indeed
+hold more influence on the prediction made by the model.
+\subsection{NN training with the NARX approach}
+With the \textbf{NARX} approach we also have to consider the input vectors from the \textbf{18th} and \textbf{19th} hour columns. My expectations were that with a more varied amount of data
+it would lead to better results when it comes to NN training.
+
+I made 4 different I/O matrices which ranged from \textbf{t to t-4} and included \textbf{t-7} for some of the I/O matrices.
+
+\subsubsection{Evaluating the results in the NARX approach}
+Below you can see the results from this training attempt, as you can see this models performed better than the ones trained with the \textf{AR} approach.
+
+
+\begin{table}[H]
+\centering
+\caption{Comparison table for NARX approach}
+\label{tab:comparison}
+\begin{tabular}{|c|c|c|c|c|p{6cm}|}
+\hline
+\textbf{Model} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE} & \textbf{sMAPE} & \textbf{Description} \\
+\hline
+NN_1 & 0.09954752 & 0.08211452 & 0.16860201 & 0.15971510  & I/O matrix: 18(t-2), 19(t-1), 19(t), 20(t+1) \\
+     & & & & & layers: 1x8 \\
+                                            & & & & & linear output: TRUE\\
+\hline
+NN_2 & 0.10163645 & 0.08423843 & 0.15945130 & 0.16691218 & I/O matrix: 20(t-7), 19(t-7), 18(t-4), 20(t-2), 19(t), 20(t+1)\\
+                                            & & & & & layers: 2x10-4\\
+                                            & & & & & linear output: FALSE\\
+\hline
+NN_3 & 0.10463934 & 0.08856077 & 0.18183779 & 0.17094784 & I/O matrix: 18(t-7), 20(t-4), 19(t), 20(t), 20(t+1)\\
+                                            & & & & & layers: 2x8-3 \\
+                                            & & & & & linear output: TRUE\\
+\hline
+NN_4 & 0.09084888 & 0.07564465 & 0.15531772 & 0.14718595 & I/O matrix: 18(t-4), 19(t), 20(t+1) \\
+                                            & & & & & layers: 1x6\\
+                                            & & & & & linear output: FALSE\\
+\hline
+NN_5 & 0.11171708 & 0.09121835 & 0.17266331 & 0.18359165 & I/O matrix: 20(t-7), 19(t-7), 18(t-4), 20(t-2), 19(t), 20(t+1)\\
+                                            & & & & & layers: 1x12 \\
+                                            & & & & & linear output: TRUE\\
+\hline 
+\end{tabular}
+\end{table}
+
+It seems that by using the other hours to train the model, it was able to make a better prediction across all the evaluation metrics.
+What seems to affect the accuracy of the model is the I/O matrix used as the input, in the \textbf{AR} approach training the \textbf{t-7} period led to the models performing better than others, but in this case 
+models with I/O matrices with that period did not perform the best. Instead it was \textbf{NN$_11_$} which had inputs from the periods \textbf{18(t-4), 19(t), 20(t+1)}.
 
 \appendix
+\section{Code for Partitioning clustering}
 
-\section{code}
+\lstinputlisting[caption={My R script},label={lst:myrscript}]{~/Documents/rcw/partioningClustering.R}
 
+\section{Code for Energy forecasting}
+\lstinputlisting[caption={My R script},label={lst:myrscript}]{~/Documents/rcw/energyForecasting.R}
 \end{document}
 
 
